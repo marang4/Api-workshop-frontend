@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from "axios";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-// Supondo que você tenha estas interfaces no arquivo
+// Suas interfaces permanecem as mesmas
 interface LoginRequest {
   email: string;
   senha: string;
@@ -13,18 +13,19 @@ interface LoginResponse {
 }
 
 const Login = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const navigate = useNavigate();
-  const API_URL = "http://localhost:8080";
+  const navigator = useNavigate();
+  const API_URL = "http://localhost:8080/";
 
+  // Seu estado de formulário permanece o mesmo
   const [formData, setFormData] = useState<LoginRequest>({
     email: "",
     senha: "",
   });
 
-  // 1. Criamos um estado para armazenar a mensagem de erro (isto não muda)
-  const [error, setError] = useState<string>("");
+  // 1. Adicionado um novo estado APENAS para a mensagem de erro
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
+  // Sua função handleChange permanece a mesma
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData((prevState) => ({
@@ -35,58 +36,52 @@ const Login = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Limpamos qualquer erro anterior
-    setError("");
+    setErrorMessage(""); // Limpa erros antigos antes de uma nova tentativa
 
     try {
       const response = await axios.post<LoginResponse>(
-        `${API_URL}/auth/login`,
+        API_URL + "auth/login",
         formData
       );
 
       const token = response.data.token;
+      console.log(token);
 
-      if (token) {
-        // 2. Como não temos contexto, salvamos o token diretamente no localStorage
-        localStorage.setItem('authToken', token);
-
-        // 3. Para garantir que o resto da aplicação reconheça o novo login,
-        // forçar um recarregamento completo da página é a abordagem mais segura.
-        window.location.href = "/";
-      } else {
-        setError("Ocorreu um erro inesperado. Tente novamente.");
+      if (token != null) {
+        navigator("/");
       }
 
-    } catch (err) {
-      // 4. Se o login falhar, mostramos a mensagem de erro
-      console.error("Erro de login:", err);
-      setError("Email ou senha inválidos. Por favor, tente novamente.");
+    } catch (error) {
+      // 2. Lógica de erro atualizada para definir a mensagem no estado
+      if (axios.isAxiosError(error) && error.response) {
+        // Erro vindo da API (ex: 400, 401, 403)
+        setErrorMessage("Email ou senha inválidos. Por favor, tente novamente.");
+      } else {
+        // Outros erros (ex: rede)
+        setErrorMessage("Não foi possível conectar ao servidor. Verifique sua conexão.");
+      }
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* O alerta de erro continua funcionando da mesma forma */}
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-
       <div className="mb-3">
-        <label htmlFor="email" className="form-label">Email</label>
+        <label htmlFor="email" className="form-label">
+          Email
+        </label>
         <input
           name="email"
-          type="email"
+          type="text"
           className="form-control"
           id="email"
           value={formData.email}
           onChange={handleChange}
-          required
         />
       </div>
       <div className="mb-3">
-        <label htmlFor="password" className="form-label">Senha</label>
+        <label htmlFor="password" className="form-label">
+          Senha
+        </label>
         <input
           name="senha"
           type="password"
@@ -94,10 +89,17 @@ const Login = () => {
           id="password"
           value={formData.senha}
           onChange={handleChange}
-          required
         />
       </div>
-      <button type="submit" className="btn btn-primary w-100 mb-3">
+
+      {/* 3. Bloco para exibir a mensagem de erro, somente se ela existir */}
+      {errorMessage && (
+        <div className="alert alert-danger" role="alert">
+          {errorMessage}
+        </div>
+      )}
+
+      <button type="submit" className="btn btn-primary w-100 mb-3 mt-2">
         Entrar
       </button>
       <div className="text-center">

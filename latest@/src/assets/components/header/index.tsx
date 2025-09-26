@@ -2,7 +2,7 @@ import React from 'react';
 // 1. Importe o 'useNavigate' para podermos redirecionar o usuário
 import { NavLink, useNavigate } from 'react-router-dom';
 
-const Header: React.FC = () => {
+function Header() {
   // 2. Crie uma instância do hook de navegação
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const navigate = useNavigate();

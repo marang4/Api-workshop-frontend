@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import type { Workshop } from '../gerenciarWorkshops/Index';
 import WorkshopCard from '../../assets/components/workshopCards/Index';
-import api from '../../services/api';
-// Importando a interface diretamente do GerenciarWorkshops
+import axios from 'axios';
 
 
-const Home: React.FC = () => {
+
+function Home() {
   const API_URL = "http://localhost:8080";
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +13,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     const buscarWorkshops = async () => {
       try {
-        const response = await api.get<Workshop[]>(`${API_URL}/workshop`);
+        const response = await axios.get<Workshop[]>(`${API_URL}/workshop`);
         setWorkshops(response.data);
       } catch (error) {
         console.error("Erro ao buscar workshops na home:", error);
