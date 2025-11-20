@@ -1,0 +1,58 @@
+import { useEffect, useState } from "react";
+import { buscarTodosUsuarios, type Usuario } from "../../services/usuarioService";
+
+function Usuarios() {
+
+const [usuarios, setUsuarios] = useState<Usuario[]>([])
+
+
+
+  useEffect(() => {
+
+    const carregarUsuarios = async() => {
+
+      const usuarios = await buscarTodosUsuarios();
+
+      setUsuarios(usuarios);
+
+
+    }
+
+    carregarUsuarios()
+
+
+  },[])
+
+
+  return(
+    <div className="mt-4">
+      <h2 className="mt-4">Painel de Usuarios</h2>
+      <table className="table table-striped table-hover">
+      <thead className="thead-dark">
+      <tr>
+        <td>ID</td>
+        <td>nome</td>
+        <td>cpf</td>
+        <td>e-mail</td>
+        
+      </tr>
+      </thead>
+      <tbody>
+        {
+          usuarios.map((usuario)=>(
+            <tr key={usuario.id}>
+              <td>{usuario.id}</td>
+              <td>{usuario.nome}</td>
+              <td>{usuario.cpf}</td>
+              <td>{usuario.email}</td>
+            </tr>
+          ) )
+        }
+      </tbody>
+      
+      </table>
+    </div>
+  )
+}
+
+export default Usuarios;

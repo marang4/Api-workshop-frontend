@@ -1,6 +1,9 @@
 import axios from "axios";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { LoginNovo } from "../../services/authService";
+import { loginSuccess } from "../../store/authSlice";
 
 // Suas interfaces permanecem as mesmas
 interface LoginRequest {
@@ -8,13 +11,10 @@ interface LoginRequest {
   senha: string;
 }
 
-interface LoginResponse {
-  token: string;
-}
 
 const Login = () => {
   const navigator = useNavigate();
-  const API_URL = "http://localhost:8080/";
+  const dispatch = useDispatch();
 
   // Seu estado de formulário permanece o mesmo
   const [formData, setFormData] = useState<LoginRequest>({
@@ -39,15 +39,17 @@ const Login = () => {
     setErrorMessage(""); // Limpa erros antigos antes de uma nova tentativa
 
     try {
-      const response = await axios.post<LoginResponse>(
-        API_URL + "auth/login",
-        formData
-      );
+      const loginResponse = await LoginNovo(formData);
 
-      const token = response.data.token;
+      const token = loginResponse.token;
       console.log(token);
 
       if (token != null) {
+         const usuarioLogin = { 
+          usuario: { email: formData.email, nome: ""},
+          token: token
+         };
+         dispatch(loginSuccess(usuarioLogin));
         navigator("/");
       }
 

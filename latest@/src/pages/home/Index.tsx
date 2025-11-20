@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import type { Workshop } from '../gerenciarWorkshops/Index';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../../store/store';
+import { setWorkshops } from '../../store/workshopSlice';
+import { getWorkshops } from '../../services/workshopService';
 import WorkshopCard from '../../assets/components/workshopCards/Index';
-import axios from 'axios';
-
-
 
 function Home() {
-  const API_URL = "http://localhost:8080";
-  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const dispatch = useDispatch();
+  const workshops = useSelector((state: RootState) => state.workshop.lista);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const buscarWorkshops = async () => {
+    const fetchWorkshops = async () => {
       try {
-        const response = await axios.get<Workshop[]>(`${API_URL}/workshop`);
-        setWorkshops(response.data);
+        // Chama o service
+        const data = await getWorkshops();
+        // Atualiza o Redux
+        dispatch(setWorkshops(data));
       } catch (error) {
         console.error("Erro ao buscar workshops na home:", error);
       } finally {
@@ -22,8 +24,8 @@ function Home() {
       }
     };
 
-    buscarWorkshops();
-  }, []);
+    fetchWorkshops();
+  }, [dispatch]);
 
   return (
     <div className="container py-5">

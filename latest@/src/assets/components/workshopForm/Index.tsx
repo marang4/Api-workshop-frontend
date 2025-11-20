@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import type { Workshop } from '../../../pages/gerenciarWorkshops/Index'; // Ajuste o caminho
+// MUDANÇA: Usando os tipos centralizados
+import type { Workshop, WorkshopRequest } from '../../../types/workshop'; 
 
-// 1. ALTERADO: Adicionado 'initialData' para receber os dados do workshop para editar
-//    E o tipo do onSave foi ajustado para enviar todos os campos necessários.
 type WorkshopFormProps = {
-  onSave: (data: Omit<Workshop, 'id'>) => void;
+  // MUDANÇA: Tipando explicitamente o dado que será salvo
+  onSave: (data: WorkshopRequest) => void;
   onClose: () => void;
   initialData: Workshop | null;
 };
@@ -15,19 +15,32 @@ const WorkshopForm: React.FC<WorkshopFormProps> = ({ onSave, onClose, initialDat
   const [vagasTotais, setVagasTotais] = useState(0);
   const [vagasOcupadas, setVagasOcupadas] = useState(0);
 
-  // 2. ADICIONADO: Este 'useEffect' preenche o formulário quando o modo de edição é ativado
   useEffect(() => {
     if (initialData) {
       setTema(initialData.tema);
-      setData(initialData.data.split('T')[0]); // Formato AAAA-MM-DD para o input
+      setData(initialData.data.split('T')[0]);
       setVagasTotais(initialData.vagasTotais);
       setVagasOcupadas(initialData.vagasOcupadas);
+    } else {
+      // Opcional: Limpar campos se for um novo cadastro
+      setTema('');
+      setData('');
+      setVagasTotais(0);
+      setVagasOcupadas(0);
     }
   }, [initialData]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    onSave({ tema, data, vagasTotais: Number(vagasTotais), vagasOcupadas: Number(vagasOcupadas) });
+    // MUDANÇA: Enviando o objeto conforme o tipo WorkshopRequest
+    onSave({ 
+        tema, 
+        data, 
+        vagasTotais: Number(vagasTotais), 
+        // Incluímos vagasOcupadas aqui caso a API precise na edição, 
+        // mas no create o service vai ignorar ou sobrescrever com 0.
+        vagasOcupadas: Number(vagasOcupadas) 
+    });
   };
 
   return (
@@ -44,6 +57,7 @@ const WorkshopForm: React.FC<WorkshopFormProps> = ({ onSave, onClose, initialDat
         <label htmlFor="vagasTotais" className="form-label">Vagas Totais</label>
         <input type="number" className="form-control" id="vagasTotais" value={vagasTotais} onChange={(e) => setVagasTotais(Number(e.target.value))} required />
       </div>
+       {/* Campo de vagas ocupadas, geralmente visível apenas na edição ou para admin */}
        <div className="mb-3">
         <label htmlFor="vagasOcupadas" className="form-label">Vagas Ocupadas</label>
         <input type="number" className="form-control" id="vagasOcupadas" value={vagasOcupadas} onChange={(e) => setVagasOcupadas(Number(e.target.value))} required />

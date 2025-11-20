@@ -1,7 +1,6 @@
 import React from 'react';
-import type { Workshop } from '../../../pages/gerenciarWorkshops/Index';
-// Importando a interface diretamente do GerenciarWorkshops
-
+// MUDANÇA: Importando do arquivo central de tipos
+import type { Workshop } from '../../../types/workshop'; 
 
 type WorkshopCardProps = {
   workshop: Workshop;

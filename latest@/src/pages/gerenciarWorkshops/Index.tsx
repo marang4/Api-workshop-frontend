@@ -1,103 +1,84 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../../store/store'; // Importe seu RootState
+import { 
+  setWorkshops, 
+  addWorkshopToList, 
+  updateWorkshopInList, 
+  removeWorkshopFromList 
+} from '../../store/workshopSlice';
+import { 
+  getWorkshops, 
+  createWorkshop, 
+  updateWorkshop, 
+  deleteWorkshop as deleteWorkshopService 
+} from '../../services/workshopService';
+import type { Workshop, WorkshopRequest } from '../../types/workshop';
+
 import WorkshopList from '../../assets/components/workshopList/Index';
 import WorkshopForm from '../../assets/components/workshopForm/Index';
-import axios from 'axios';
-
-export interface Workshop {
-  id: number;
-  tema: string;
-  data: string;
-  vagasTotais: number;
-  vagasOcupadas: number;
-}
 
 function GerenciarWorkshops() {
-  const API_URL = "http://localhost:8080";
+  const dispatch = useDispatch();
+  // Buscamos a lista do Redux
+  const workshops = useSelector((state: RootState) => state.workshop.lista);
 
-  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  // Estados locais apenas para controle de UI (Modais e Mensagens)
   const [showModal, setShowModal] = useState(false);
   const [editingWorkshop, setEditingWorkshop] = useState<Workshop | null>(null);
-  // NOVO: Estado para a mensagem de sucesso
   const [successMessage, setSuccessMessage] = useState<string>("");
 
-  const buscarWorkshops = async () => {
-    try {
-      const response = await axios.get<Workshop[]>(`${API_URL}/workshop`);
-      setWorkshops(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar workshops:", error);
-      setWorkshops([]);
-    }
-  };
-
+  // Carregar dados ao iniciar
   useEffect(() => {
-    buscarWorkshops();
-  }, []);
+    const fetchDados = async () => {
+      try {
+        const dados = await getWorkshops();
+        dispatch(setWorkshops(dados)); // Salva no Redux
+      } catch (error) {
+        console.error("Erro ao buscar workshops:", error);
+      }
+    };
+    fetchDados();
+  }, [dispatch]);
 
-  // NOVO: useEffect para limpar a mensagem de sucesso após 5 segundos
+  // Limpar mensagem de sucesso
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => {
-        setSuccessMessage("");
-      }, 5000); // 5 segundos
+      const timer = setTimeout(() => setSuccessMessage(""), 5000);
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
 
-  const getToken = () => {
-    const token = "";
-    if (!token) {
-      console.error("Token de autenticação não encontrado!");
-      return null;
-    }
-    return token;
-  };
-
-  const getAuthHeaders = () => {
-    const token = getToken();
-    return token ? { 'Authorization': `Bearer ${token}` } : {};
-  };
-
-  const handleSave = async (workshopData: Omit<Workshop, 'id' | 'vagasOcupadas'>) => {
+  const handleSave = async (workshopData: WorkshopRequest) => {
     try {
       if (editingWorkshop) {
-        await axios.put(`${API_URL}/workshop/${editingWorkshop.id}`, workshopData, {
-          headers: getAuthHeaders()
-        });
+        // Editar
+        const atualizado = await updateWorkshop(editingWorkshop.id, workshopData);
+        dispatch(updateWorkshopInList(atualizado)); // Atualiza Redux
+        setSuccessMessage('Workshop atualizado com sucesso!');
       } else {
-        const workshopCompleto = { ...workshopData, vagasOcupadas: 0 };
-        await axios.post(`${API_URL}/workshop`, workshopCompleto, {
-          headers: getAuthHeaders()
-        });
+        // Criar
+        const novo = await createWorkshop(workshopData);
+        dispatch(addWorkshopToList(novo)); // Atualiza Redux
+        setSuccessMessage('Workshop cadastrado com sucesso!');
       }
-
-      // ALTERADO: Definir a mensagem de sucesso
-      setSuccessMessage(
-        editingWorkshop 
-          ? 'Workshop atualizado com sucesso!' 
-          : 'Workshop cadastrado com sucesso!'
-      );
       
       handleCloseModal();
-      buscarWorkshops();
     } catch (error) {
       console.error("Erro ao salvar workshop:", error);
-      alert("Falha ao salvar o workshop. Verifique o console para mais detalhes.");
+      alert("Falha ao salvar o workshop.");
     }
   };
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir este workshop?')) {
       try {
-        await axios.delete(`${API_URL}/workshop/${id}`, {
-          headers: getAuthHeaders()
-        });
-        buscarWorkshops();
-        // Opcional: Adicionar mensagem de sucesso para exclusão também
+        await deleteWorkshopService(id);
+        dispatch(removeWorkshopFromList(id)); // Remove do Redux
         setSuccessMessage("Workshop excluído com sucesso!");
       } catch (error) {
         console.error("Erro ao excluir workshop:", error);
-        alert("Falha ao excluir o workshop. Verifique o console para mais detalhes.");
+        alert("Falha ao excluir o workshop.");
       }
     }
   };
@@ -127,19 +108,14 @@ function GerenciarWorkshops() {
         </button>
       </div>
 
-      {/* NOVO: Bloco para exibir a mensagem de sucesso */}
       {successMessage && (
         <div className="alert alert-success alert-dismissible fade show" role="alert">
           {successMessage}
-          <button 
-            type="button" 
-            className="btn-close" 
-            onClick={() => setSuccessMessage("")}
-            aria-label="Close"
-          ></button>
+          <button type="button" className="btn-close" onClick={() => setSuccessMessage("")} aria-label="Close"></button>
         </div>
       )}
 
+      {/* Passamos a lista vinda do Redux */}
       <WorkshopList 
         workshops={workshops} 
         onDelete={handleDelete} 
