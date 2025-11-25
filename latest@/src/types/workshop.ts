@@ -4,7 +4,8 @@ export interface Workshop {
   data: string;
   vagasTotais: number;
   vagasOcupadas: number;
+  local: string;
 }
 
-// Tipo para criação/edição (sem ID e sem vagasOcupadas no cadastro)
+
 export type WorkshopRequest = Omit<Workshop, "id">;

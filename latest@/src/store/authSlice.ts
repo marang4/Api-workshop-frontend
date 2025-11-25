@@ -3,8 +3,10 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
 
 interface Usuario{
+  id: number;
   email:string,
-  nome: string
+  nome: string,
+  role: string
 }
 
 

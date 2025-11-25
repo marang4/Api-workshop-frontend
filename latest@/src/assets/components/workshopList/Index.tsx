@@ -1,4 +1,4 @@
-// src/assets/components/workshopList/Index.tsx
+
 
 import React from "react";
 import type { Workshop } from "../../../types/workshop";

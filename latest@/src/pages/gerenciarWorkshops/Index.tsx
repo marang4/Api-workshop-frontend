@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
 import type { RootState } from '../../store/store'; // Importe seu RootState
 import { 
   setWorkshops, 
@@ -7,12 +8,7 @@ import {
   updateWorkshopInList, 
   removeWorkshopFromList 
 } from '../../store/workshopSlice';
-import { 
-  getWorkshops, 
-  createWorkshop, 
-  updateWorkshop, 
-  deleteWorkshop as deleteWorkshopService 
-} from '../../services/workshopService';
+import { getMeusWorkshops, createWorkshop, updateWorkshop, deleteWorkshop as deleteWorkshopService } from '../../services/workshopService';
 import type { Workshop, WorkshopRequest } from '../../types/workshop';
 
 import WorkshopList from '../../assets/components/workshopList/Index';
@@ -32,15 +28,17 @@ function GerenciarWorkshops() {
   useEffect(() => {
     const fetchDados = async () => {
       try {
-        const dados = await getWorkshops();
-        dispatch(setWorkshops(dados)); // Salva no Redux
+        // MUDANÇA: Chamamos getMeusWorkshops() em vez de getWorkshops()
+        // Assim o Organizador só vê os dele, e o Admin (se o back tratar) vê todos ou os dele.
+        const dados = await getMeusWorkshops();
+        
+        dispatch(setWorkshops(dados)); 
       } catch (error) {
-        console.error("Erro ao buscar workshops:", error);
+        console.error("Erro ao buscar meus workshops:", error);
       }
     };
     fetchDados();
   }, [dispatch]);
-
   // Limpar mensagem de sucesso
   useEffect(() => {
     if (successMessage) {
@@ -70,15 +68,36 @@ function GerenciarWorkshops() {
     }
   };
 
+ // <--- Não esqueça de importar isso lá em cima!
+
+// ...
+
   const handleDelete = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir este workshop?')) {
       try {
         await deleteWorkshopService(id);
-        dispatch(removeWorkshopFromList(id)); // Remove do Redux
+        
+        dispatch(removeWorkshopFromList(id));
         setSuccessMessage("Workshop excluído com sucesso!");
-      } catch (error) {
-        console.error("Erro ao excluir workshop:", error);
-        alert("Falha ao excluir o workshop.");
+        
+      } catch (error) { // <--- 1. REMOVA O ": any" DAQUI
+        console.error("Erro ao excluir:", error);
+        
+        // 2. USE A VERIFICAÇÃO DO AXIOS
+        if (axios.isAxiosError(error)) {
+            const status = error.response?.status;
+
+            if (status === 500 || status === 409) {
+                alert("Não é possível excluir este workshop porque já existem inscritos nele.\n\nPara cancelar o evento, edite o título para 'CANCELADO'.");
+            } else if (status === 403) {
+                alert("Você não tem permissão para excluir este workshop.");
+            } else {
+                alert("Falha ao excluir o workshop. Tente novamente.");
+            }
+        } else {
+            // Erro genérico (não foi requisição HTTP)
+            alert("Ocorreu um erro inesperado.");
+        }
       }
     }
   };

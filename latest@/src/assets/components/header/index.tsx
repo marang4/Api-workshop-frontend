@@ -1,62 +1,92 @@
 import React from 'react';
-// 1. Importe o 'useNavigate' para podermos redirecionar o usuário
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux'; // Adicione useDispatch
+import { logout } from '../../../store/authSlice'; // Importe a ação de logout
+import type { RootState } from '../../../store/store';
 
 function Header() {
-  // 2. Crie uma instância do hook de navegação
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { usuario, isAutenticado } = useSelector((state: RootState) => state.auth);
 
-  // 3. Crie a função de logout
+  const role = usuario?.role ? usuario.role.toUpperCase() : "";
+  const ehAdmin = role.includes("ADMIN");
+  const ehOrganizador = role.includes("ORGANIZADOR");
+  
+  const podeGerenciarWorkshops = isAutenticado && (ehAdmin || ehOrganizador);
+  const podeGerenciarUsuarios = isAutenticado && ehAdmin;
+  const podeVerHome = !isAutenticado || !ehOrganizador || ehAdmin;
+
   const handleLogout = () => {
-    // Remove o token de autenticação do armazenamento local do navegador
-    localStorage.removeItem('authToken');
+   
+    dispatch(logout());
+    
 
-    // Redireciona o usuário para a página de login com um recarregamento completo.
-    // Isso garante que qualquer estado da aplicação seja limpo.
-    window.location.href = '/login';
+    window.location.href = '/login'; 
   };
 
+  const linkLogo = (isAutenticado && ehOrganizador && !ehAdmin) ? "/gerenciar-workshops" : "/";
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
       <div className="container">
-        <NavLink className="navbar-brand" to="/">
+        <NavLink className="navbar-brand fw-bold" to={linkLogo}>
           WorkshopsDev
         </NavLink>
 
-        {/* Botão "hambúrguer" que aparece em telas menores */}
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Container dos links de navegação */}
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto align-items-center"> {/* Usei align-items-center para alinhar verticalmente */}
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/" end>
-                Home
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/gerenciar-workshops">
-                Gerenciar Workshop
-              </NavLink>
-            </li>
-            {/* 4. Adicione o item e o botão de Logout */}
-            <li className="nav-item ms-lg-2 mt-2 mt-lg-0"> {/* Adiciona margem em telas grandes e espaço no topo em telas pequenas */}
-              <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
-                <i className="bi bi-box-arrow-right me-2"></i> {/* Ícone opcional do Bootstrap Icons */}
-                Sair
-              </button>
-            </li>
+          <ul className="navbar-nav ms-auto align-items-center">
+            
+            {podeVerHome && (
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/" end>Home</NavLink>
+              </li>
+            )}
+
+            {podeGerenciarWorkshops && (
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/gerenciar-workshops">
+                  {ehAdmin ? "Todos Workshops" : "Meus Workshops"}
+                </NavLink>
+              </li>
+            )}
+
+            {podeGerenciarUsuarios && (
+              <li className="nav-item">
+                <NavLink className="nav-link text-warning" to="/gerenciar-usuarios">
+                  <i className="bi bi-people-fill me-1"></i>
+                  Usuários
+                </NavLink>
+              </li>
+            )}
+
+            {isAutenticado ? (
+              <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
+                <div className="d-flex align-items-center gap-3">
+                  <span className="text-light d-none d-lg-block small">
+                    Olá, {usuario?.nome?.split(' ')[0]}
+                  </span>
+                  <button 
+                    className="btn btn-outline-danger btn-sm" 
+                    onClick={handleLogout}
+                    title="Sair"
+                  >
+                    <i className="bi bi-box-arrow-right me-2"></i>
+                    Sair
+                  </button>
+                </div>
+              </li>
+            ) : (
+              <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
+                <NavLink className="btn btn-primary btn-sm" to="/login">
+                  Entrar
+                </NavLink>
+              </li>
+            )}
+
           </ul>
         </div>
       </div>
