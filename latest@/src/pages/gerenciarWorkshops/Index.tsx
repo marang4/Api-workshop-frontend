@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import type { RootState } from '../../store/store'; // Importe seu RootState
+import type { RootState } from '../../store/store'; 
 import { 
   setWorkshops, 
   addWorkshopToList, 
@@ -16,20 +16,19 @@ import WorkshopForm from '../../assets/components/workshopForm/Index';
 
 function GerenciarWorkshops() {
   const dispatch = useDispatch();
-  // Buscamos a lista do Redux
+
   const workshops = useSelector((state: RootState) => state.workshop.lista);
 
-  // Estados locais apenas para controle de UI (Modais e Mensagens)
+ 
   const [showModal, setShowModal] = useState(false);
   const [editingWorkshop, setEditingWorkshop] = useState<Workshop | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>("");
 
-  // Carregar dados ao iniciar
+
   useEffect(() => {
     const fetchDados = async () => {
       try {
-        // MUDANÇA: Chamamos getMeusWorkshops() em vez de getWorkshops()
-        // Assim o Organizador só vê os dele, e o Admin (se o back tratar) vê todos ou os dele.
+     
         const dados = await getMeusWorkshops();
         
         dispatch(setWorkshops(dados)); 
@@ -39,7 +38,7 @@ function GerenciarWorkshops() {
     };
     fetchDados();
   }, [dispatch]);
-  // Limpar mensagem de sucesso
+
   useEffect(() => {
     if (successMessage) {
       const timer = setTimeout(() => setSuccessMessage(""), 5000);
@@ -52,12 +51,12 @@ function GerenciarWorkshops() {
       if (editingWorkshop) {
         // Editar
         const atualizado = await updateWorkshop(editingWorkshop.id, workshopData);
-        dispatch(updateWorkshopInList(atualizado)); // Atualiza Redux
+        dispatch(updateWorkshopInList(atualizado)); 
         setSuccessMessage('Workshop atualizado com sucesso!');
       } else {
-        // Criar
+       
         const novo = await createWorkshop(workshopData);
-        dispatch(addWorkshopToList(novo)); // Atualiza Redux
+        dispatch(addWorkshopToList(novo)); 
         setSuccessMessage('Workshop cadastrado com sucesso!');
       }
       
@@ -68,9 +67,6 @@ function GerenciarWorkshops() {
     }
   };
 
- // <--- Não esqueça de importar isso lá em cima!
-
-// ...
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir este workshop?')) {
@@ -80,10 +76,10 @@ function GerenciarWorkshops() {
         dispatch(removeWorkshopFromList(id));
         setSuccessMessage("Workshop excluído com sucesso!");
         
-      } catch (error) { // <--- 1. REMOVA O ": any" DAQUI
+      } catch (error) { 
         console.error("Erro ao excluir:", error);
         
-        // 2. USE A VERIFICAÇÃO DO AXIOS
+      
         if (axios.isAxiosError(error)) {
             const status = error.response?.status;
 
@@ -95,7 +91,7 @@ function GerenciarWorkshops() {
                 alert("Falha ao excluir o workshop. Tente novamente.");
             }
         } else {
-            // Erro genérico (não foi requisição HTTP)
+   
             alert("Ocorreu um erro inesperado.");
         }
       }
@@ -134,7 +130,7 @@ function GerenciarWorkshops() {
         </div>
       )}
 
-      {/* Passamos a lista vinda do Redux */}
+
       <WorkshopList 
         workshops={workshops} 
         onDelete={handleDelete} 

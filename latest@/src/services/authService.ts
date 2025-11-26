@@ -5,7 +5,6 @@ export interface EsqueciSenhaRequest {
 }
 
 export interface RedefinirSenhaRequest {
-  email: string;
   token: string;
   senha: string; 
 }
@@ -17,6 +16,11 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+}
+
+export interface AlterarSenhaRequest {
+  senhaAtual: string;
+  novaSenha: string;
 }
 
 export async function solicitarRecuperacaoSenha(email: string): Promise<void> {
@@ -33,6 +37,11 @@ export async function LoginNovo(loginRequest:LoginRequest): Promise<LoginRespons
   const response = await api.post<LoginResponse>("auth/login",loginRequest);
  
   return response.data;
+}
+
+export async function alterarSenhaLogado(dados: AlterarSenhaRequest): Promise<void> {
+  // O token vai automático pelo interceptor do api.ts
+  await api.post("/auth/alterarsenha", dados);
 }
 
 

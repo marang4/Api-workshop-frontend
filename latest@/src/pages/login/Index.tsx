@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
 import { LoginNovo } from "../../services/authService";
 import { loginSuccess } from "../../store/authSlice";
 
+// Interfaces...
 interface LoginResponseData {
   token: string;
   usuario: {
@@ -76,9 +77,19 @@ const Login = () => {
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: "400px" }}>
-      <div className="card shadow-sm p-4">
-        <h2 className="text-center mb-4">Login</h2>
+    <div className="container mt-3" style={{ maxWidth: "400px" }}>
+      
+  
+      <div className="mb-3">
+        <Link to="/" className="text-decoration-none text-secondary small">
+          <i className="bi bi-arrow-left me-1"></i>
+          Voltar para o site
+        </Link>
+      </div>
+
+      <div className="card shadow-sm p-4 border-0">
+        <h4 className="text-center mb-4 text-primary">Login</h4>
+        
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label htmlFor="email" className="form-label">Email</label>
@@ -108,20 +119,17 @@ const Login = () => {
             />
           </div>
 
-          
           <div className="text-end mb-3">
             <Link 
                 to="/esqueci-senha" 
-                className="text-decoration-none small"
-                style={{ fontSize: '0.9rem' }}
+                className="text-decoration-none small text-muted"
             >
                 Esqueci minha senha
             </Link>
           </div>
-          
 
           {errorMessage && (
-            <div className="alert alert-danger" role="alert">
+            <div className="alert alert-danger py-2 small" role="alert">
               {errorMessage}
             </div>
           )}
@@ -141,9 +149,9 @@ const Login = () => {
             )}
           </button>
 
-          <div className="text-center">
-            <p className="mb-0">
-              Não tem uma conta? <Link to="/cadastre-se">Cadastre-se</Link>
+          <div className="text-center mt-3">
+            <p className="mb-0 small text-muted">
+              Não tem uma conta? <Link to="/cadastre-se" className="fw-bold text-decoration-none">Cadastre-se</Link>
             </p>
           </div>
         </form>

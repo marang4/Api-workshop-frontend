@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../store/store';
 
-// Imports dos Services e Slices
+
 import { getUsuarios, criarUsuarioAdmin, deleteUsuario } from '../../services/usuarioService';
 import { setUsuariosList, addUsuarioToList, removeUsuarioFromList } from '../../store/usuarioSlice';
 
@@ -11,20 +11,20 @@ function GerenciarUsuarios() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Dados do Redux
+
   const usuarios = useSelector((state: RootState) => state.usuarios.lista);
   const { usuario } = useSelector((state: RootState) => state.auth);
   
   const [loading, setLoading] = useState(true);
 
-  // Estados do Formulário
+
   const [novoNome, setNovoNome] = useState("");
   const [novoEmail, setNovoEmail] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [novaRole, setNovaRole] = useState("ORGANIZADOR");
   const [showForm, setShowForm] = useState(false);
 
-  // Segurança: Verifica se é Admin
+
   const ehAdmin = usuario?.role && usuario.role.toUpperCase().includes("ADMIN");
 
   useEffect(() => {
@@ -33,7 +33,7 @@ function GerenciarUsuarios() {
     }
   }, [ehAdmin, navigate]);
 
-  // Carregar Dados
+
   useEffect(() => {
     const fetchDados = async () => {
       if (ehAdmin) {
@@ -42,7 +42,7 @@ function GerenciarUsuarios() {
           dispatch(setUsuariosList(dados));
         } catch (error) {
           console.error("Erro ao buscar usuários:", error);
-          // alert("Erro ao carregar lista."); // Opcional: comentar para evitar spam de alert
+          
         } finally {
           setLoading(false);
         }
@@ -51,7 +51,7 @@ function GerenciarUsuarios() {
     fetchDados();
   }, [dispatch, ehAdmin]);
 
-  // Criar Usuário
+
   const handleCriarUsuario = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -66,7 +66,7 @@ function GerenciarUsuarios() {
       dispatch(addUsuarioToList(novoUsuario));
       alert("Usuário cadastrado com sucesso!");
       
-      // Limpa e fecha
+
       setShowForm(false);
       setNovoNome("");
       setNovoEmail("");
@@ -77,7 +77,7 @@ function GerenciarUsuarios() {
     }
   };
 
-  // Excluir Usuário
+
   const handleDelete = async (id: number, nome: string) => {
     if (window.confirm(`Tem certeza que deseja excluir o usuário "${nome}"?`)) {
       try {
@@ -94,9 +94,9 @@ function GerenciarUsuarios() {
   if (!ehAdmin) return null;
 
   return (
-    <div className="container mt-5 pb-5"> {/* pb-5 dá um espaço no final da página */}
+    <div className="container mt-5 pb-5"> 
       
-      {/* Cabeçalho da Página - Flex para alinhar botão em telas pequenas */}
+    
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
         <h2 className="mb-0">Gerenciar Usuários</h2>
         <button 
@@ -108,12 +108,12 @@ function GerenciarUsuarios() {
         </button>
       </div>
 
-      {/* Formulário de Cadastro (Responsivo) */}
+
       {showForm && (
         <div className="card p-4 mb-4 shadow-sm bg-light border-0">
           <h5 className="mb-3 border-bottom pb-2">Cadastrar Novo Membro</h5>
           <form onSubmit={handleCriarUsuario}>
-            <div className="row g-3"> {/* g-3 dá espaçamento uniforme entre colunas */}
+            <div className="row g-3"> 
               
               <div className="col-12 col-md-6 col-lg-3">
                 <label className="form-label small text-muted">Nome</label>
@@ -149,7 +149,7 @@ function GerenciarUsuarios() {
         </div>
       )}
 
-      {/* Tabela de Usuários (Responsiva) */}
+      
       <div className="card shadow-sm border-0">
         <div className="card-body p-0">
           {loading ? (
@@ -159,7 +159,7 @@ function GerenciarUsuarios() {
               </div>
             </div>
           ) : (
-            // DIV TABLE-RESPONSIVE: O segredo para não quebrar no celular
+          
             <div className="table-responsive">
               <table className="table table-striped table-hover mb-0 align-middle">
                 <thead className="table-dark">
@@ -188,18 +188,18 @@ function GerenciarUsuarios() {
                           </span>
                         </td>
                         
-                        {/* Botão de Ação com text-nowrap para não quebrar */}
+                       
                         <td className="text-center text-nowrap">
                           <button 
                             className="btn btn-danger btn-sm" 
                             onClick={() => handleDelete(u.id, u.nome)}
                             title="Excluir Usuário"
-                            // Desabilita botão se for o próprio usuário (visual)
+                            
                             disabled={u.id === usuario?.id}
                             style={{ opacity: u.id === usuario?.id ? 0.5 : 1 }}
                           >
                             <i className="bi bi-trash3-fill"></i> 
-                            <span className="d-none d-md-inline ms-1">Excluir</span> {/* Texto some no celular, fica só ícone */}
+                            <span className="d-none d-md-inline ms-1">Excluir</span> 
                           </button>
                         </td>
                       </tr>

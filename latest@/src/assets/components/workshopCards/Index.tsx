@@ -1,5 +1,4 @@
 import React from 'react';
-
 import type { Workshop } from '../../../types/workshop'; 
 
 type WorkshopCardProps = {
@@ -27,9 +26,10 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({ workshop, onVerDetalhes }) 
           <i className="bi bi-person-check-fill me-2"></i>
           Inscritos: {workshop.vagasOcupadas} / {workshop.vagasTotais}
         </p>
-<button 
+
+        <button 
           className="btn btn-primary mt-auto w-100" 
-          onClick={() => onVerDetalhes(workshop)}
+          onClick={() => onVerDetalhes(workshop)} 
         >
           Ver Detalhes
         </button>
